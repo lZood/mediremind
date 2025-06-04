@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "492332713820",
+    "project_id": "mediremind-6cce9",
+    "storage_bucket": "mediremind-6cce9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:492332713820:android:e814822c4e01020f0c2399",
+        "android_client_info": {
+          "package_name": "com.example.mediremind"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7oMOZkzN2iPJSvgfvOTop_R8GKjHWKD4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
