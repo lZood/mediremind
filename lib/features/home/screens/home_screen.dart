@@ -9,7 +9,11 @@ import 'package:mediremind/features/reminders/screens/medication_schedule_screen
 import 'package:mediremind/features/vital_signs/screens/vital_signs_overview_screen.dart';
 import 'package:mediremind/features/appointments/screens/appointments_list_screen.dart';
 import 'package:mediremind/features/reports/screens/reports_screen.dart';
-import 'package:mediremind/features/profile/screens/user_profile_screen.dart'; // NUEVA PANTALLA DE PERFIL
+import 'package:mediremind/features/profile/screens/user_profile_screen.dart';
+
+// NUEVAS IMPORTACIONES
+import 'package:mediremind/core/services/fcm_service.dart'; // Para el servicio FCM
+import 'package:mediremind/features/notifications/screens/notifications_history_screen.dart'; // Para la pantalla de historial de notificaciones
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,6 +25,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   final ProfileService _profileService = ProfileService();
+  final FcmService _fcmService = FcmService(); // Instanciar FcmService
   UserProfile? _currentUserProfile;
   bool _isLoadingProfileAppBar = true; // Para el loader del AppBar
 
@@ -35,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadUserProfileForAppBar();
+    _initializeFCM(); // Llamar a la inicialización de FCM
   }
 
   Future<void> _loadUserProfileForAppBar() async {
@@ -53,6 +59,27 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() { _isLoadingProfileAppBar = false; });
       }
       print("Error cargando perfil para AppBar en HomeScreen: $e");
+      // Considerar mostrar un SnackBar o mensaje al usuario si falla la carga del perfil
+    }
+  }
+
+  // NUEVO MÉTODO para inicializar FCM
+  Future<void> _initializeFCM() async {
+    // Podrías esperar a que _loadUserProfileForAppBar complete si necesitas datos del perfil
+    // para registrar el token inmediatamente, o manejarlo dentro de FcmService.
+    // Por ahora, lo llamamos directamente. FcmService ya tiene lógica para
+    // obtener el perfil y actualizar el token.
+    try {
+      print("HomeScreen: Inicializando FCM y solicitando permisos...");
+      await _fcmService.initializeAndRequestPermission();
+      print("HomeScreen: Permisos FCM y token gestionados.");
+    } catch (e) {
+      print("HomeScreen: Error inicializando FCM: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al configurar notificaciones: ${e.toString()}')),
+        );
+      }
     }
   }
 
@@ -69,15 +96,15 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute(builder: (context) => const UserProfileScreen()),
     ).then((_) {
       // Opcional: Recargar perfil si algo pudo haber cambiado en UserProfileScreen
-      // _loadUserProfileForAppBar();
+      _loadUserProfileForAppBar(); // Recargar para reflejar cambios del perfil si los hubo
     });
   }
 
+  // MODIFICADO para navegar a la pantalla de historial
   void _navigateToNotifications() {
-    // TODO: Navegar a la futura pantalla de notificaciones
-    print("Navegar a Notificaciones (Próximamente)");
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Pantalla de Notificaciones (Próximamente)')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NotificationsHistoryScreen()),
     );
   }
 
@@ -89,9 +116,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, // Para quitar el botón de "atrás" si esta es la pantalla principal
-        titleSpacing: 0, // Ajustar espaciado si es necesario
-        leadingWidth: _isLoadingProfileAppBar ? 56 : null, // Ancho para el loader o el botón
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        leadingWidth: _isLoadingProfileAppBar ? 56 : null,
         leading: _isLoadingProfileAppBar
             ? const Padding(
                 padding: EdgeInsets.all(12.0),
@@ -112,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: InkWell(
           onTap: _navigateToProfile,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0), // Para que el área de tap sea mayor
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: _isLoadingProfileAppBar
                 ? const Text('Cargando...', style: TextStyle(fontSize: 17))
                 : Text(displayName, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500)),
@@ -120,12 +147,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none_outlined), // Ícono de campana
+            icon: const Icon(Icons.notifications_none_outlined),
             onPressed: _navigateToNotifications,
             tooltip: 'Notificaciones',
           ),
         ],
-        elevation: 1, // Sutil elevación
+        elevation: 1,
       ),
       body: IndexedStack(
         index: _selectedIndex,

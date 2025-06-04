@@ -29,22 +29,17 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   if (message.notification != null) {
     print('Message also contained a notification: ${message.notification!.title} - ${message.notification!.body}');
   }
-  // Aquí puedes realizar tareas como actualizar un badge, guardar datos localmente, etc.
-  // No interactúes con la UI directamente desde aquí ya que la app podría no estar activa.
 }
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Necesario para operaciones async antes de runApp
+  WidgetsFlutterBinding.ensureInitialized();
 
-  // Inicializar Firebase ANTES que cualquier otra cosa que dependa de él
   try {
     print("Main: Inicializando Firebase...");
     await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform, // Usa el archivo generado por FlutterFire
+      options: DefaultFirebaseOptions.currentPlatform,
     );
     print("Main: Firebase inicializado correctamente.");
-
-    // Configurar el handler para mensajes en segundo plano/terminado
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     // NUEVO: Inicializar LocalNotificationService (para notificaciones en foreground)
@@ -55,7 +50,6 @@ Future<void> main() async {
     print('************************************************************');
     print('Error FATAL durante la inicialización de Firebase/LocalNotif en main.dart: $e');
     print('************************************************************');
-    // Decide cómo manejar este error. Podría impedir que las notificaciones funcionen.
   }
 
   String? initialRouteError;
@@ -90,7 +84,6 @@ Future<void> main() async {
   runApp(MyApp(initialError: initialRouteError));
 }
 
-// Helper para acceder al cliente de Supabase globalmente (opcional pero conveniente)
 final supabase = Supabase.instance.client;
 
 class MyApp extends StatelessWidget {
@@ -104,8 +97,6 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.indigo,
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        // colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo), // Para Material 3
-        // useMaterial3: true,
       ),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -116,7 +107,6 @@ class MyApp extends StatelessWidget {
         Locale('en', ''), 
         Locale('es', 'MX'), 
       ],
-      // locale: const Locale('es', 'MX'), // Opcional: establecer un locale por defecto
       home: initialError != null
           ? ErrorScreen(message: initialError!)
           : const AuthGate(),
@@ -124,7 +114,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Widget simple para mostrar errores de inicialización
 class ErrorScreen extends StatelessWidget {
   final String message;
   const ErrorScreen({super.key, required this.message});
