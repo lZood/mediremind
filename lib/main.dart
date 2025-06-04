@@ -10,6 +10,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart'; // Para el background handler
 import 'firebase_options.dart'; // Archivo generado por FlutterFire CLI
 
+// NUEVA IMPORTACIÓN para el servicio de notificaciones locales
+import 'package:mediremind/core/services/local_notification_service.dart';
+
+
 // Este handler DEBE ser una función de nivel superior (no dentro de una clase).
 // También necesita la anotación @pragma('vm:entry-point') para asegurar que funcione
 // correctamente cuando la app está terminada o en segundo plano.
@@ -18,7 +22,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Si estás usando otras dependencias de Firebase en el background,
   // puedes necesitar inicializar Firebase aquí también, aunque usualmente
   // la inicialización principal en main() es suficiente si se hace antes de runApp.
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform); // Descomentar si es necesario
 
   print("Handling a background message: ${message.messageId}");
   print('Message data: ${message.data}');
@@ -43,9 +47,13 @@ Future<void> main() async {
     // Configurar el handler para mensajes en segundo plano/terminado
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
+    // NUEVO: Inicializar LocalNotificationService (para notificaciones en foreground)
+    await LocalNotificationService.initialize();
+    print("Main: LocalNotificationService inicializado.");
+
   } catch (e) {
     print('************************************************************');
-    print('Error FATAL durante la inicialización de Firebase en main.dart: $e');
+    print('Error FATAL durante la inicialización de Firebase/LocalNotif en main.dart: $e');
     print('************************************************************');
     // Decide cómo manejar este error. Podría impedir que las notificaciones funcionen.
   }
